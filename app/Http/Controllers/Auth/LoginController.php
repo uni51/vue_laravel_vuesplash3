@@ -49,4 +49,18 @@ class LoginController extends Controller
     {
         return $user;
     }
+
+    /**
+     * Illuminate\Foundation\Auth\AuthenticatesUsersトレイトのloggedOutメソッドをオーバーライド
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    protected function loggedOut(Request $request)
+    {
+        // セッションを再生成する
+        $request->session()->regenerate();
+
+        return response()->json();
+    }
 }
