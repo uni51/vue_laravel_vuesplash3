@@ -13,7 +13,8 @@ window.axios.interceptors.request.use(config => {
   return config
 })
 
+// responseを扱う処理をまとめて設定
 window.axios.interceptors.response.use(
-  response => response,
-  error => error.response || error
+  response => response, // 成功時の処理
+  error => error.response || error // 失敗時の処理
 )
