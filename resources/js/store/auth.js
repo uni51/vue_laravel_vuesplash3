@@ -1,8 +1,9 @@
-import { OK } from '../util'
+import { OK, UNPROCESSABLE_ENTITY } from '../util'
 
 const state = {
   user: null,
-  apiStatus: null
+  apiStatus: null,
+  loginErrorMessages: null
 }
 
 const getters = {
@@ -13,6 +14,12 @@ const getters = {
 const mutations = {
   setUser (state, user) {
     state.user = user
+  },
+  setApiStatus (state, status) {
+    state.apiStatus = status
+  },
+  setLoginErrorMessages (state, messages) {
+    state.loginErrorMessages = messages
   }
 }
 
@@ -34,9 +41,16 @@ const actions = {
 
     // 失敗だったらfalse
     context.commit('setApiStatus', false)
-    // あるストアモジュールから別のモジュールのミューテーションを commit する場合は第三引数に { root: true } を追加する必要がある。
-    // この場合は、authストアモジュールからerrorストアモジュールのミューテーションをcommitしている
-    context.commit('error/setCode', response.status, { root: true })
+
+    // バリデーションエラーの場合の処理
+    if (response.status === UNPROCESSABLE_ENTITY) {
+      context.commit('setLoginErrorMessages', response.data.errors)
+    } else {
+      // システムエラーの場合の処理
+      // あるストアモジュールから別のモジュールのミューテーションを commit する場合は第三引数に { root: true } を追加する必要がある。
+      // この場合は、authストアモジュールからerrorストアモジュールのミューテーションをcommitしている
+      context.commit('error/setCode', response.status, { root: true })
+    }
   },
   async logout (context) {
     const response = await axios.post('/api/logout')

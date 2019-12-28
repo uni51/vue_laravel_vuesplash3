@@ -15,6 +15,14 @@
     <!-- ログインフォーム -->
     <div class="panel" v-show="tab === 1">
       <form class="form" @submit.prevent="login">
+        <div v-if="loginErrors" class="errors">
+          <ul v-if="loginErrors.email">
+            <li v-for="msg in loginErrors.email" v-bind:key="msg">{{ msg }}</li>
+          </ul>
+          <ul v-if="loginErrors.password">
+            <li v-for="msg in loginErrors.password" v-bind:key="msg">{{ msg }}</li>
+          </ul>
+        </div>
         <label for="login-email">Email</label>
         <input type="text" class="form__item" id="login-email" v-model="loginForm.email">
         <label for="login-password">Password</label>
@@ -44,43 +52,60 @@
 </template>
 
 <script>
-  export default {
-    data () {
-      return {
-        tab: 1,
-        loginForm: {
-          email: '',
-          password: ''
-        },
-        registerForm: {
-          name: '',
-          email: '',
-          password: '',
-          password_confirmation: ''
-        }
-      }
-    },
-    computed: {
-      apiStatus () {
-        return this.$store.state.auth.apiStatus
-      }
-    },
-    methods: {
-      async register () {
-        // authストアのresigterアクションを呼び出す
-        await this.$store.dispatch('auth/register', this.registerForm)
-        // トップページに移動する
-        this.$router.push('/')
-      },
-      async login () {
-        // authストアのloginアクションを呼び出す
-        await this.$store.dispatch('auth/login', this.loginForm)
+import { mapState } from 'vuex'
 
-        // apiStatus が成功（true）だった場合のみトップページに移動する。
-        if (this.apiStatus) {
-          this.$router.push('/')
-        }
+export default {
+  data () {
+    return {
+      tab: 1,
+      loginForm: {
+        email: '',
+        password: ''
+      },
+      registerForm: {
+        name: '',
+        email: '',
+        password: '',
+        password_confirmation: ''
       }
     }
+  },
+  computed: {
+    // apiStatus () {
+    //   return this.$store.state.auth.apiStatus
+    // },
+    // loginErrors () {
+    //   return this.$store.state.auth.loginErrorMessages
+    // }
+
+    // mapState は、コンポーネントの算出プロパティとストアのステートをマッピングする関数
+    ...mapState({
+      apiStatus: state => state.auth.apiStatus,
+      loginErrors: state => state.auth.loginErrorMessages
+    })
+  },
+  methods: {
+    async register () {
+      // authストアのresigterアクションを呼び出す
+      await this.$store.dispatch('auth/register', this.registerForm)
+      // トップページに移動する
+      this.$router.push('/')
+    },
+    async login () {
+      // authストアのloginアクションを呼び出す
+      await this.$store.dispatch('auth/login', this.loginForm)
+
+      // apiStatus が成功（true）だった場合のみトップページに移動する。
+      if (this.apiStatus) {
+        this.$router.push('/')
+      }
+    },
+    clearError () {
+      this.$store.commit('auth/setLoginErrorMessages', null)
+    }
+  },
+  created () {
+    this.clearError()
   }
+}
 </script>
