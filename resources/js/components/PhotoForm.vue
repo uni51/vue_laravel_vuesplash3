@@ -1,7 +1,12 @@
 <template>
   <div  v-show="value" class="photo-form">
     <h2 class="title">Submit a photo</h2>
-    <form class="form">
+    <form class="form" v-on:submit.prevent="submit">
+      <div class="errors" v-if="errors">
+        <ul v-if="errors.photo">
+          <li v-for="msg in errors.photo" :key="msg">{{ msg }}</li>
+        </ul>
+      </div>
       <input class="form__item" type="file" @change="onFileChange">
       <output class="form__output" v-if="preview">
         <img :src="preview" alt="">
@@ -14,6 +19,8 @@
 </template>
 
 <script>
+  import { CREATED, UNPROCESSABLE_ENTITY } from '../util'
+
   export default {
     props: {
       value: {
@@ -23,7 +30,9 @@
     },
     data () {
       return {
-        preview: null
+        preview: null,
+        photo: null,
+        errors: null
       }
     },
     methods: {
@@ -56,10 +65,33 @@
         // ファイルを読み込む
         // 読み込まれたファイルはデータURL形式で受け取れる（上記onload参照）
         reader.readAsDataURL(event.target.files[0])
+        this.photo = event.target.files[0]
       },
       reset () {
         this.preview = ''
+        this.photo = null
         this.$el.querySelector('input[type="file"]').value = null
+      },
+      async submit () {
+        const formData = new FormData()
+        formData.append('photo', this.photo)
+        const response = await axios.post('/api/photos', formData)
+
+        if (response.status === UNPROCESSABLE_ENTITY) {
+          this.errors = response.data.errors
+          return false
+        }
+
+        this.reset()
+        // inputイベントによってv-modelが更新され、するとバインドされている<Navbar>（親コンポーネント）のshowFormも更新される。
+        this.$emit('input', false) // inputイベントを発行して自動的にフォームが閉じるようにしている
+
+        if (response.status !== CREATED) {
+          this.$store.commit('error/setCode', response.status)
+          return false
+        }
+
+        this.$router.push(`/photos/${response.data.id}`)
       }
     }
   }
