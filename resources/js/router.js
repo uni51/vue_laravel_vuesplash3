@@ -18,10 +18,11 @@ const routes = [
   {
     path: '/',
     component: PhotoList,
-    // props: route => {
-    //   const page = route.query.page
-    //   return { page: /^[1-9][0-9]*$/.test(page) ? page * 1 : 1 }
-    // }
+    props: route => {
+      const page = route.query.page
+      // 正規表現を使って整数と解釈されない値は「1」と見なして返却している
+      return { page: /^[1-9][0-9]*$/.test(page) ? page * 1 : 1 }
+    }
   },
   {
     path: '/photos/:id',
@@ -48,6 +49,10 @@ const routes = [
 // VueRouterインスタンスを作成する
 const router = new VueRouter({
   mode: 'history',
+  // ページ遷移時にページ先頭を表示
+  scrollBehavior () {
+    return { x: 0, y: 0 }
+  },
   routes
 })
 
