@@ -24,7 +24,7 @@ class PhotoController extends Controller
      */
     public function index()
     {
-        $photos = Photo::with(['owner'])
+        $photos = Photo::with(['owner', 'likes'])
             ->orderBy(Photo::CREATED_AT, 'desc')->paginate();
 
         return $photos;
@@ -100,7 +100,7 @@ class PhotoController extends Controller
     {
         // comments リレーションから Comment を取得してさらにそこから author リレーションを辿って User の name も取得する必要があります。
         $photo = Photo::where('id', $id)
-            ->with(['owner', 'comments.author'])->first();
+            ->with(['owner', 'comments.author', 'likes'])->first();
 
         return $photo ?? abort(404);
     }
