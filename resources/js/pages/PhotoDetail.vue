@@ -108,6 +108,7 @@ export default {
         return false
       }
 
+      // response.dataを、this.photo.commentsの先頭に追加
       this.photo.comments = [
         response.data,
         ...this.photo.comments

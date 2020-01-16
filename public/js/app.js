@@ -2622,6 +2622,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
                 return _context2.abrupt("return", false);
 
               case 11:
+                // response.dataを、this.photo.commentsの先頭に追加
                 this.photo.comments = [response.data].concat(_toConsumableArray(this.photo.comments));
 
               case 12:
